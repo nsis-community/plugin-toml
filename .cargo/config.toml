@@ -1,0 +1,18 @@
+# nsis-plugin comes from a private GitHub repo, so fetch it with the git CLI
+# and its credentials rather than Cargo's built-in client.
+[net]
+git-fetch-with-cli = true
+
+# Link the C runtime into the DLL. A dynamic one needs VCRUNTIME140.dll, which
+# a clean Windows does not have, so the installer could not load the plug-in.
+[target.'cfg(target_env = "msvc")']
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# Rebuild std so that a panic is a bare abort: no message formatting, no
+# backtrace printing. That is half the DLL. Host tests keep unwinding, so a
+# failing assertion still reports.
+[unstable]
+build-std = ["std", "panic_abort"]
+
+[target.'cfg(windows)']
+rustflags = ["-Zunstable-options", "-Cpanic=immediate-abort"]

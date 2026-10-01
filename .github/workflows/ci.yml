@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+# nsis-plugin is not on crates.io yet. Cargo fetches it from the private
+# idleberg/nsis-plugin-rs, with a token that can read that repo.
+env:
+  NSIS_PLUGIN_RS_TOKEN: ${{ secrets.NSIS_PLUGIN_RS_TOKEN }}
+
+jobs:
+  # Host-native: formatting, lints and the unit tests.
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+
+      - name: Grant access to nsis-plugin-rs
+        run: git config --global url."https://x-access-token:${NSIS_PLUGIN_RS_TOKEN}@github.com/idleberg/nsis-plugin-rs".insteadOf "https://github.com/idleberg/nsis-plugin-rs"
+
+      - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+
+      - name: Run checks
+        run: mise run checks
+
+  # Builds the release DLLs with MSVC, then runs the smoke installer against
+  # them: export names, calling convention and the stack protocol, which unit
+  # tests cannot see.
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Grant access to nsis-plugin-rs
+        shell: bash
+        run: git config --global url."https://x-access-token:${NSIS_PLUGIN_RS_TOKEN}@github.com/idleberg/nsis-plugin-rs".insteadOf "https://github.com/idleberg/nsis-plugin-rs"
+
+      - name: Build plug-in
+        id: build
+        uses: nsis-dev/build-plugin@924af67479ce313e5f26f06fb30427a12f61f4f4 # main
+        with:
+          name: TOML
+          toolchain: rust
+          project: Contrib/TOML/Cargo.toml
+          targets: x86-unicode,amd64-unicode
+          release: ${{ github.event_name == 'release' }}
+
+      - uses: nsis-dev/setup-nsis@99783963764acafc24a5e3335ddfce26d03c20a2 # v1.2.1
+
+      # Stock NSIS has x86 stubs only, so the amd64 DLL is built but not run.
+      - name: Smoke test
+        shell: bash
+        run: |
+          mkdir -p dist/smoke
+          makensis \
+            "-DPLUGINDIR=${{ steps.build.outputs.plugins-dir }}/Plugins/x86-unicode" \
+            "-DOUTFILE=$PWD/dist/smoke/smoke.exe" \
+            "-XTarget x86-unicode" \
+            "$PWD/test/smoke.nsi"
+          status=0
+          dist/smoke/smoke.exe /S || status=$?
+          cat dist/smoke/smoke.log
+          exit $status

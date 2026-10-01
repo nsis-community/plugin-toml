@@ -1,0 +1,12 @@
+[workspace]
+members = ["Contrib/TOML"]
+resolver = "3"
+
+# A plug-in DLL is embedded in every installer built with it, so size matters
+# more than it usually does.
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,72 @@
+# The Rust toolchain and its cross targets come from rust-toolchain.toml.
+
+[tools]
+hk = "latest"
+pkl = "latest"
+
+[env]
+HK_MISE = 1
+DIST = "dist/Plugins"
+
+[hooks]
+postinstall = "hk install --mise"
+
+[tasks.format]
+description = "Check Rust formatting"
+run = "cargo fmt --check"
+
+[tasks."format:fix"]
+description = "Format Rust code"
+run = "cargo fmt"
+
+[tasks.lint]
+description = "Lint with Clippy"
+run = "cargo clippy --all-targets -- --deny warnings"
+
+[tasks."lint:fix"]
+description = "Apply Clippy's suggestions"
+run = "cargo clippy --all-targets --fix --allow-dirty --allow-staged -- --deny warnings"
+
+[tasks.test]
+description = "Run host tests"
+run = "cargo test"
+
+[tasks.checks]
+description = "Run all checks (formatting, linting, tests)"
+depends = ["format", "lint", "test"]
+
+[tasks.build]
+description = "Build every variant into dist/Plugins/<variant>/"
+run = '''
+set -eu
+# Unicode only: a TOML document is UTF-8.
+for variant in ${VARIANTS:-x86-unicode amd64-unicode}; do
+  case "$variant" in
+    x86-unicode)   target=i686-pc-windows-gnu ;;
+    amd64-unicode) target=x86_64-pc-windows-gnu ;;
+    *) echo "unknown variant: $variant" >&2; exit 1 ;;
+  esac
+  cargo build --release --target "$target"
+  mkdir -p "$DIST/$variant"
+  cp target/$target/release/*.dll "$DIST/$variant/"
+  ls -l "$DIST/$variant"/*.dll
+done
+'''
+
+[tasks.smoke]
+description = "Build the smoke installer and run it under Wine"
+depends = ["build"]
+run = '''
+set -eu
+VARIANT="${VARIANT:-x86-unicode}"
+mkdir -p dist/smoke
+rm -f dist/smoke/smoke.log
+"${MAKENSIS:-makensis}" \
+  "-DPLUGINDIR=$PWD/$DIST/$VARIANT" \
+  "-DOUTFILE=$PWD/dist/smoke/smoke.exe" \
+  "-XTarget $VARIANT" \
+  "$PWD/test/smoke.nsi"
+WINEDEBUG=-all wine dist/smoke/smoke.exe /S 2>/dev/null || true
+cat dist/smoke/smoke.log
+grep -q "ALL PASSED" dist/smoke/smoke.log
+'''

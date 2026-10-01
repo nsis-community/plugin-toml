@@ -1,0 +1,8 @@
+[toolchain]
+# Nightly for `build-std` and `-Cpanic=immediate-abort` in .cargo/config.toml,
+# which halve the DLL. Pinned, so a nightly regression cannot break a release;
+# bump deliberately.
+channel = "nightly-2026-08-19"
+components = ["rustfmt", "clippy", "rust-src"]
+# rustup installs these on the first cargo invocation.
+targets = ["i686-pc-windows-gnu", "x86_64-pc-windows-gnu"]

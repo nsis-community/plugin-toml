@@ -1,0 +1,32 @@
+[package]
+name = "nsis-toml"
+version = "0.1.0"
+description = "Read and write TOML files from NSIS scripts"
+publish = false
+authors = ["Jan T. Sott"]
+edition = "2024"
+license = "MIT"
+rust-version = "1.85"
+
+[lib]
+# The DLL file name is the plug-in namespace in a script: `TOML::Get`.
+name = "TOML"
+crate-type = ["cdylib"]
+
+[dependencies]
+# `std`, because `toml_edit` needs it. No `mem-intrinsics`: the CRT that `std`
+# links already provides them.
+nsis-plugin = { git = "https://github.com/idleberg/nsis-plugin-rs", default-features = false, features = ["std"] }
+toml_edit = "0.25"
+
+[dev-dependencies]
+# Enables the fake-installer harness for `cargo test` only, so it never lands
+# in a shipped DLL.
+nsis-plugin = { git = "https://github.com/idleberg/nsis-plugin-rs", default-features = false, features = ["testing"] }
+
+# Unicode only: a TOML document must be UTF-8, which an ANSI build could reach
+# only through a lossy `CP_ACP` conversion.
+[features]
+default = ["unicode"]
+unicode = ["nsis-plugin/unicode"]
+
