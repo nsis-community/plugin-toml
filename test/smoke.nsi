@@ -7,7 +7,7 @@
 Unicode true
 
 !include "LogicLib.nsh"
-!include "${__FILEDIR__}/../Include/TOML.nsh"
+!include "${__FILEDIR__}\..\Include\TOML.nsh"
 
 !ifndef PLUGINDIR
 	!error "define PLUGINDIR: the Plugins/<variant> directory holding TOML.dll"
