@@ -16,13 +16,13 @@ crate-type = ["cdylib"]
 [dependencies]
 # `std`, because `toml_edit` needs it. No `mem-intrinsics`: the CRT that `std`
 # links already provides them.
-nsis-plugin = { git = "https://github.com/idleberg/nsis-plugin-rs", default-features = false, features = ["std"] }
+nsis-plugin = { version = "0.1", default-features = false, features = ["std"] }
 toml_edit = "0.25"
 
 [dev-dependencies]
 # Enables the fake-installer harness for `cargo test` only, so it never lands
 # in a shipped DLL.
-nsis-plugin = { git = "https://github.com/idleberg/nsis-plugin-rs", default-features = false, features = ["testing"] }
+nsis-plugin = { version = "0.1", default-features = false, features = ["testing"] }
 
 # Unicode only: a TOML document must be UTF-8, which an ANSI build could reach
 # only through a lossy `CP_ACP` conversion.
