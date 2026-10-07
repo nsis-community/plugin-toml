@@ -44,7 +44,7 @@ jobs:
           name: TOML
           toolchain: rust
           project: Contrib/TOML/Cargo.toml
-          targets: x86-unicode
+          targets: x86-unicode,amd64-unicode
           release: ${{ github.event_name == 'release' }}
 
       - uses: nsis-dev/setup-nsis@99783963764acafc24a5e3335ddfce26d03c20a2 # v1.2.1
