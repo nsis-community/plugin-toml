@@ -39,12 +39,11 @@ jobs:
 
       - name: Build plug-in
         id: build
-        uses: nsis-dev/build-plugin@924af67479ce313e5f26f06fb30427a12f61f4f4 # main
+        uses: nsis-dev/release-package@cde8e8f889db320207fe80d3bd90fe63922d680f # v0.2.0
         with:
           name: TOML
           toolchain: rust
           project: Contrib/TOML/Cargo.toml
-          targets: x86-unicode,amd64-unicode
           release: ${{ github.event_name == 'release' }}
 
       - uses: nsis-dev/setup-nsis@99783963764acafc24a5e3335ddfce26d03c20a2 # v1.2.1
