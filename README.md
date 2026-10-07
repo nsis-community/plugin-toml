@@ -1,8 +1,8 @@
 # TOML plug-in for NSIS
 
-[![License: MIT](https://img.shields.io/github/license/nsis-community/plugin-toml)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/nsis-community/plugin-toml)](https://github.com/nsis-community/plugin-toml/releases)
-[![CI](https://github.com/nsis-community/plugin-toml/actions/workflows/ci.yml/badge.svg)](https://github.com/nsis-community/plugin-toml/actions/workflows/ci.yml)
+![License](https://img.shields.io/github/license/nsis-community/plugin-toml?color=blue&style=for-the-badge)
+![Release](https://img.shields.io/github/v/release/nsis-community/plugin-toml?style=for-the-badge)
+![CI](https://img.shields.io/github/actions/workflow/status/nsis-community/plugin-toml/ci.yml?style=for-the-badge)
 
 Read and write TOML 1.0 files from NSIS scripts, keeping comments, spacing and key order intact.
 
